@@ -53,7 +53,6 @@ async function SwitchRegion(play) {
 	const CN = $.read('BiliArea_CN') || 'DIRECT'; //Your China sub-policy name.
 	const TW = $.read('BiliArea_TW') || 'TW'; //Your Taiwan sub-policy name.
 	const HK = $.read('BiliArea_HK') || 'HK'; //Your HongKong sub-policy name.
-	const DF = $.read('BiliArea_DF') || 'DF'; //Sub-policy name used after region is blocked(e.g. url 404)
 	const off = $.read('BiliArea_disabled') || ''; //WiFi blacklist(disable region change), separated by commas.
 	const current = await $.getPolicy(Group);
 	const area = (() => {
@@ -63,9 +62,7 @@ async function SwitchRegion(play) {
 			if (current != HK && (current == TW && test ? 0 : 1)) select = HK;
 		} else if (/\u50c5[\u4e00-\u9fa5]+\u53f0|%20%E5%8F%B0&/.test(play)) {
 			if (current != TW) select = TW;
-		} else if (play === -404) {
-			if (current != DF) select = DF;
-		} else if (current != CN) {
+		} else if (play === -404|current != CN) {
 			select = CN;
 		}
 		if ($.isQuanX && current === 'direct' && select === 'DIRECT') {
