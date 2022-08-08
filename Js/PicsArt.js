@@ -22,5 +22,6 @@ hostname = api.picsart.c*, api.meiease.c*
 **************************/
 
 let obj = JSON.parse($response.body);
-obj.subscription.granted = "true";
+obj.subscription.granted = true
+obj.subscription.is_trial_used = true
 $done({body: JSON.stringify(obj)});
