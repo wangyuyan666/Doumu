@@ -1,27 +1,42 @@
-/*
-PicsArt 解锁高级功能
+var body = $response.body;
+var obj = JSON.parse(body);
 
-***************************
-QuantumultX:
+obj = {
+  "status" : "success",
+  "response" : [
+    {
+      "status" : "SUBSCRIPTION_PURCHASED",
+      "order_id" : "210001770182151",
+      "original_order_id" : "210001514424729",
+      "is_trial" : false,
+      "plan_meta" : {
+        "storage_limit_in_mb" : 512000,
+        "frequency" : "yearly",
+        "scope_id" : "full",
+        "id" : "com.picsart.studio.subscription_plus_tier_yearly",
+        "product_id" : "subscription_plus_tier_yearly",
+        "level" : 1000,
+        "auto_renew_product_id" : "com.picsart.studio.subscription_plus_tier_yearly",
+        "type" : "renewable",
+        "permissions" : [
+          "premium_tools_standard"
+        ],
+        "description" : "",
+        "tier_id" : "plus"
+      },
+      "limitation" : {
+        "max_count" : 5,
+        "limits_exceeded" : false
+      },
+      "reason" : "ok",
+      "subscription_id" : "com.picsart.studio.subscription_plus_tier_yearly",
+      "is_eligible_for_introductory" : false,
+      "purchase_date" : 1715695156000,
+      "expire_date" : 1872518379000
+    }
+  ]
+}
 
-[rewrite_local]
-^https:\/\/api\.(picsart|meiease)\.c(n|om)\/users\/show\/me\.json url script-response-body https://raw.githubusercontent.com/NobyDa/Script/master/Surge/JS/PicsArt.js
 
-[mitm]
-hostname = api.picsart.c*, api.meiease.c*
-
-***************************
-Surge4 or Loon:
-
-[Script]
-http-response https:\/\/api\.(picsart|meiease)\.c(n|om)\/users\/show\/me\.json requires-body=1,max-size=0,script-path=https://raw.githubusercontent.com/NobyDa/Script/master/Surge/JS/PicsArt.js
-
-[MITM]
-hostname = api.picsart.c*, api.meiease.c*
-
-**************************/
-
-let obj = JSON.parse($response.body);
-obj.subscription.granted = true
-obj.subscription.is_trial_used = true
-$done({body: JSON.stringify(obj)});
+body = JSON.stringify(obj);
+$done({body});
