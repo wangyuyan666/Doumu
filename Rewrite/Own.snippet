@@ -1,0 +1,31 @@
+hostname = auth.dicts.cn, mb3admin.com, spclient.wg.spotify.com, api.tipsoon.com, user-b612-api.snow.me, api.meiease.*,api.picsart.*,api.polaxiong.com,user-snow-api.snow.me,175.178.52.149, i.815616.xyz
+
+
+# > 简讯
+^https?:\/\/api\.tipsoon\.com\/api\/v1\/top\/ad url reject-img
+^https:\/\/api\.tipsoon\.com\/api\/v1\/user\/info url script-response-body https://raw.githubusercontent.com/wangyuyan666/Doumu/main/Js/JianXun.js
+
+# > Spotify
+^https:\/\/spclient\.wg\.spotify\.com\/(bootstrap\/v1\/bootstrap|user-customization-service\/v1\/customize)$ url script-response-body https://raw.githubusercontent.com/app2smile/rules/master/js/spotify-proto.js
+
+# > Emby
+^https:\/\/mb3admin\.com\/admin\/service(\/registration\/validateDevice|\/appstore\/register|\/registration\/validate|\/registration\/getStatus|\/supporter\/retrievekey) url script-echo-response https://raw.githubusercontent.com/wangyuyan666/Doumu/main/Js/Emby.js
+
+# > 词根词缀
+^http:\/\/auth\.dicts\.cn\/dict\/service\/UserCenter\/GetUserInfo.au url script-response-body https://raw.githubusercontent.com/wangyuyan666/Doumu/main/Js/CiGenCiZhui.js
+
+# > B612解锁VIP
+^https:\/\/user-b612-api\.snow\.me\/v1\/purchase\/subscription\/subscriber\/status url script-response-body https://raw.githubusercontent.com/wangyuyan666/Doumu/main/Js/B612.js
+
+# > Picsart 解锁 Gold
+^https://api.(meiease|picsart).(cn|com)/gw-v2/shop/subscription/apple/purchases url script-response-body https://raw.githubusercontent.com/wangyuyan666/Doumu/main/Js/Picsart.js
+
+# > 泼辣修图解锁VIP
+^https:\/\/api\.polaxiong\.com\/v1\/payments\/(appleiap\/receipts\/confirmation|profiles\/@me\/subscription) url script-response-body https://raw.githubusercontent.com/wangyuyan666/Doumu/main/Js/Polarr.js
+
+# > Snow解锁VIP
+^https?:\/\/user-snow-api\.snow\.me\/v1\/purchase\/subscription\/subscriber\/status$ url script-response-body https://raw.githubusercontent.com/wangyuyan666/Doumu/main/Js/Snow.js
+
+# > 山丘阅读VIP
+^http:\/\/175\.178\.52\.149:88\/api\/v2\/myinfo\/ url script-response-body https://raw.githubusercontent.com/wangyuyan666/Doumu/main/Js/SummitReader.js
+^http:\/\/i\.815616\.xyz\/api\/v2\/myinfo\/ url script-response-body https://raw.githubusercontent.com/wangyuyan666/Doumu/main/Js/SummitReader.js
