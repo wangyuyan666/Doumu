@@ -1,4 +1,4 @@
-hostname = auth.dicts.cn, mb3admin.com, spclient.wg.spotify.com, api.tipsoon.com, user-b612-api.snow.me, api.meiease.*,api.picsart.*,api.polaxiong.com,user-snow-api.snow.me,175.178.52.149, i.815616.xyz
+hostname = auth.dicts.cn, spclient.wg.spotify.com, api.tipsoon.com, user-b612-api.snow.me, api.meiease.*,api.picsart.*,api.polaxiong.com,user-snow-api.snow.me,175.178.52.149, i.815616.xyz
 
 
 # > 简讯
@@ -7,9 +7,6 @@ hostname = auth.dicts.cn, mb3admin.com, spclient.wg.spotify.com, api.tipsoon.com
 
 # > Spotify
 ^https:\/\/spclient\.wg\.spotify\.com\/(bootstrap\/v1\/bootstrap|user-customization-service\/v1\/customize)$ url script-response-body https://raw.githubusercontent.com/app2smile/rules/master/js/spotify-proto.js
-
-# > Emby
-^https:\/\/mb3admin\.com\/admin\/service(\/registration\/validateDevice|\/appstore\/register|\/registration\/validate|\/registration\/getStatus|\/supporter\/retrievekey) url script-echo-response https://raw.githubusercontent.com/wangyuyan666/Doumu/main/Js/Emby.js
 
 # > 词根词缀
 ^http:\/\/auth\.dicts\.cn\/dict\/service\/UserCenter\/GetUserInfo.au url script-response-body https://raw.githubusercontent.com/wangyuyan666/Doumu/main/Js/CiGenCiZhui.js
