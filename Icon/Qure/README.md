@@ -1,4 +1,4 @@
-# Qure<br>
+# Qure [原仓库地址](https://github.com/Koolson/Qure)<br>
 ![Image text](https://raw.githubusercontent.com/wangyuyan666/Doumu/main/Icon/Qure/Other/Qure_Logo.png)
 <br>
 
