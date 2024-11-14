@@ -1,0 +1,12 @@
+#!name= 山丘阅读
+#!desc= 山丘阅读VIP
+#!tag = 内购
+#!icon= https://raw.githubusercontent.com/wangyuyan666/Doumu/main/Icon/Qure/IconSet/Color/Summit_Reader.png
+
+[Script]
+http-response ^http:\/\/175\.178\.52\.149:88\/api\/v2\/myinfo\/ script-path=https://raw.githubusercontent.com/wangyuyan666/Doumu/main/Js/SummitReader.js, requires-body=true, timeout=60, tag=SummitReader
+
+http-response ^http:\/\/i\.815616\.xyz\/api\/v2\/myinfo\/ script-path=https://raw.githubusercontent.com/wangyuyan666/Doumu/main/Js/SummitReader.js, requires-body=true, timeout=60, tag=SummitReader
+
+[MITM]
+hostname = 175.178.52.149, i.815616.xyz

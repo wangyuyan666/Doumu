@@ -1,0 +1,10 @@
+#!name= B612
+#!desc= B612 VIP
+#!tag = 内购
+#!icon= https://raw.githubusercontent.com/wangyuyan666/Doumu/main/Icon/Qure/IconSet/Color/B612.png
+
+[Script]
+http-response ^https:\/\/user-b612-api\.snow\.me\/v1\/purchase\/subscription\/subscriber\/status script-path=https://raw.githubusercontent.com/wangyuyan666/Doumu/main/Js/B612.js, requires-body=true, timeout=60, tag=B612
+
+[MITM]
+hostname = user-b612-api.snow.me
