@@ -2,6 +2,7 @@
 #!desc= Emby Playback
 #!tag = 内购
 #!icon= https://raw.githubusercontent.com/wangyuyan666/Doumu/main/Icon/Qure/IconSet/Color/Emby.png
+#!openUrl=https://github.com/wangyuyan666/Doumu
 
 [Script]
 http-response ^https:\/\/mb3admin\.com\/admin\/service(\/registration\/validateDevice|\/appstore\/register|\/registration\/validate|\/registration\/getStatus|\/supporter\/retrievekey) requires-body=1,max-size=0, script-path=https://raw.githubusercontent.com/wangyuyan666/Doumu/main/Js/Emby.js, tag=Emby

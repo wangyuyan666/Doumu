@@ -2,6 +2,7 @@
 #!desc= Picsart Gold
 #!tag = 内购
 #!icon= https://raw.githubusercontent.com/wangyuyan666/Doumu/main/Icon/Qure/IconSet/Color/Picsart.png
+#!openUrl=https://github.com/wangyuyan666/Doumu
 
 [Script]
 http-response ^https://api.(meiease|picsart).(cn|com)/gw-v2/shop/subscription/apple/purchases script-path=https://raw.githubusercontent.com/wangyuyan666/Doumu/main/Js/Picsart.js, requires-body=true, timeout=60, tag=Picsart

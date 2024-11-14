@@ -2,6 +2,7 @@
 #!desc=	Snow VIP
 #!tag = 内购
 #!icon= https://raw.githubusercontent.com/wangyuyan666/Doumu/main/Icon/Qure/IconSet/Color/Snow.png
+#!openUrl=https://github.com/wangyuyan666/Doumu
 
 [Script]
 http-response ^https?:\/\/user-snow-api\.snow\.me\/v1\/purchase\/subscription\/subscriber\/status$ script-path=https://raw.githubusercontent.com/wangyuyan666/Doumu/main/Js/Snow.js, requires-body=true, timeout=60, tag=Snow
