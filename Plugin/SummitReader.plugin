@@ -1,7 +1,7 @@
-#!name= 山丘阅读
-#!desc= 山丘阅读VIP
-#!tag = 内购
-#!icon= https://raw.githubusercontent.com/wangyuyan666/Doumu/main/Icon/Qure/IconSet/Color/Summit_Reader.png
+#!name=山丘阅读
+#!desc=山丘阅读VIP
+#!tag=内购
+#!icon=https://raw.githubusercontent.com/wangyuyan666/Doumu/main/Icon/Qure/IconSet/Color/Summit_Reader.png
 #!openUrl=https://github.com/wangyuyan666/Doumu
 
 [Script]

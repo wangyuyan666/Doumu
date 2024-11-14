@@ -1,7 +1,7 @@
-#!name= Emby
-#!desc= Emby Playback
-#!tag = 内购
-#!icon= https://raw.githubusercontent.com/wangyuyan666/Doumu/main/Icon/Qure/IconSet/Color/Emby.png
+#!name=Emby
+#!desc=Emby Playback
+#!tag=内购
+#!icon=https://raw.githubusercontent.com/wangyuyan666/Doumu/main/Icon/Qure/IconSet/Color/Emby.png
 #!openUrl=https://github.com/wangyuyan666/Doumu
 
 [Script]
