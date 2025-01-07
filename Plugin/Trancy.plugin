@@ -1,0 +1,11 @@
+#!name=Trancy
+#!desc=Trancy Premium
+#!tag=内购
+#!icon=https://raw.githubusercontent.com/wangyuyan666/Doumu/main/Icon/Qure/IconSet/Color/Trancy.png
+#!openUrl=https://github.com/wangyuyan666/Doumu
+
+[Script]
+http-response ^https?:\/\/api\.trancy\.org\/1\/user\/profile script-path=https://raw.githubusercontent.com/wangyuyan666/Doumu/main/Js/Trancy.js, requires-body=true, timeout=60, tag=Trancy
+
+[MITM]
+hostname = api.trancy.org
