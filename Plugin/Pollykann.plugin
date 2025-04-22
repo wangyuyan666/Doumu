@@ -1,0 +1,11 @@
+#!name=Pollykann
+#!desc=鹦鹉看看Pro
+#!tag=内购
+#!icon=https://raw.githubusercontent.com/wangyuyan666/Doumu/main/Icon/Qure/IconSet/Color/Pollykann.png
+#!openUrl=https://github.com/wangyuyan666/Doumu
+
+[Script]
+http-response ^https:\/\/buy\.itunes\.apple\.com\/verifyReceipt script-path=https://raw.githubusercontent.com/wangyuyan666/Doumu/main/Js/Pollykann.js, requires-body=true, timeout=60, tag=Pollykann
+
+[MITM]
+hostname = buy.itunes.apple.com
