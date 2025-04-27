@@ -1,0 +1,13 @@
+#!name=Cheese
+#!desc=Cheese VIP
+#!tag=内购
+#!icon=https://raw.githubusercontent.com/wangyuyan666/Doumu/main/Icon/Qure/IconSet/Color/Cheese.png
+#!openUrl=https://github.com/wangyuyan666/Doumu
+
+[Script]
+http-response ^https?:\/\/stock\.zsxg\.cn\/api\/v2\/user\/vipType script-path=https://raw.githubusercontent.com/wangyuyan666/Doumu/main/Js/Cheese1.js, requires-body=true, timeout=60, tag=CheeseVIP
+
+http-response ^https?:\/\/stock\.zsxg\.cn\/api\/v2\/user\/userinfo script-path=https://raw.githubusercontent.com/wangyuyan666/Doumu/main/Js/Cheese2.js, requires-body=true, timeout=60, tag=CheeseUser
+
+[MITM]
+hostname = stock.zsxg.cn
