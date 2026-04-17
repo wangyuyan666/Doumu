@@ -284,6 +284,10 @@ const HTML_JSCHECK = `<!DOCTYPE html>
   .btn-ghost:hover { border-color: var(--border-active); color: var(--text); }
   .btn-dl { background: rgba(106,247,168,0.1); color: var(--success); border: 1px solid rgba(106,247,168,0.2); }
   .btn-dl:hover { background: rgba(106,247,168,0.15); }
+  .btn-cross { background: rgba(124,106,247,0.1); color: var(--accent); border: 1px solid rgba(124,106,247,0.25); }
+  .btn-cross:hover { background: rgba(124,106,247,0.18); }
+  .btn-dl-cross { background: rgba(124,106,247,0.1); color: var(--accent); border: 1px solid rgba(124,106,247,0.25); }
+  .btn-dl-cross:hover { background: rgba(124,106,247,0.18); }
   .action-row { display: flex; justify-content: flex-end; margin-top: 20px; }
   /* Results */
   .results-section { margin-top: 8px; }
@@ -446,7 +450,7 @@ document.getElementById('btn-check-file').addEventListener('click', async () => 
 function renderResult(data, name, url) {
   const section = document.getElementById('results-section')
   section.style.display = 'block'
-  const { issues, fixedJs, fetchError } = data
+  const { issues, fixedJs, crossJs, fetchError } = data
 
   let statusBadge = ''
   if (fetchError) {
@@ -468,12 +472,25 @@ function renderResult(data, name, url) {
       }).join('') + '</div>'
     : ''
 
-  const actionsHtml = fixedJs
-    ? '<div class="result-actions"><button class="btn btn-ghost" id="btn-toggle-preview" style="padding:8px 16px;font-size:12px;">预览修正版</button><button class="btn btn-dl" id="btn-dl-fixed" style="padding:8px 16px;font-size:12px;">↓ 下载修正版</button></div>'
-    : ''
+  // Actions: fixed version + cross-platform version (always available unless fetch error)
+  let actionsHtml = ''
+  if (!fetchError) {
+    actionsHtml = '<div class="result-actions">'
+    if (fixedJs) {
+      actionsHtml += '<button class="btn btn-ghost" id="btn-toggle-fixed" style="padding:8px 16px;font-size:12px;">预览修正版</button>'
+      actionsHtml += '<button class="btn btn-dl" id="btn-dl-fixed" style="padding:8px 16px;font-size:12px;">↓ 修正版</button>'
+    }
+    actionsHtml += '<button class="btn btn-cross" id="btn-toggle-cross" style="padding:8px 16px;font-size:12px;">预览双平台版</button>'
+    actionsHtml += '<button class="btn btn-dl-cross" id="btn-dl-cross" style="padding:8px 16px;font-size:12px;">↓ 双平台版</button>'
+    actionsHtml += '</div>'
+  }
 
-  const previewHtml = fixedJs
+  // Two preview panes
+  const fixedPreviewHtml = fixedJs
     ? '<div class="fixed-preview" id="fixed-preview">' + esc(fixedJs) + '</div>'
+    : ''
+  const crossPreviewHtml = crossJs
+    ? '<div class="fixed-preview" id="cross-preview">' + esc(crossJs) + '</div>'
     : ''
 
   const urlLine = url ? '<div class="result-url">' + esc(url) + '</div>' : ''
@@ -485,23 +502,47 @@ function renderResult(data, name, url) {
     '</div>' +
     issuesHtml +
     actionsHtml +
-    previewHtml +
+    fixedPreviewHtml +
+    crossPreviewHtml +
   '</div>'
 
+  // Bind: fixed version
   if (fixedJs) {
-    document.getElementById('btn-toggle-preview').onclick = () => {
+    document.getElementById('btn-toggle-fixed').onclick = () => {
       const preview = document.getElementById('fixed-preview')
+      // Close cross-preview if open
+      const crossPreview = document.getElementById('cross-preview')
+      if (crossPreview) { crossPreview.classList.remove('visible'); document.getElementById('btn-toggle-cross').textContent = '预览双平台版' }
       const isVisible = preview.classList.toggle('visible')
-      document.getElementById('btn-toggle-preview').textContent = isVisible ? '隐藏预览' : '预览修正版'
+      document.getElementById('btn-toggle-fixed').textContent = isVisible ? '隐藏修正版' : '预览修正版'
     }
     document.getElementById('btn-dl-fixed').onclick = () => {
-      const blob = new Blob([fixedJs], { type: 'text/javascript' })
-      const a = document.createElement('a')
-      a.href = URL.createObjectURL(blob)
-      a.download = (name || 'script').replace(/\\.js$/i, '') + '.fixed.js'
-      a.click()
+      download(fixedJs, (name || 'script').replace(/\\.js$/i, '') + '.fixed.js')
     }
   }
+
+  // Bind: cross-platform version
+  if (crossJs && !fetchError) {
+    document.getElementById('btn-toggle-cross').onclick = () => {
+      const preview = document.getElementById('cross-preview')
+      // Close fixed-preview if open
+      const fixedPreview = document.getElementById('fixed-preview')
+      if (fixedPreview) { fixedPreview.classList.remove('visible'); const fb = document.getElementById('btn-toggle-fixed'); if(fb) fb.textContent = '预览修正版' }
+      const isVisible = preview.classList.toggle('visible')
+      document.getElementById('btn-toggle-cross').textContent = isVisible ? '隐藏双平台版' : '预览双平台版'
+    }
+    document.getElementById('btn-dl-cross').onclick = () => {
+      download(crossJs, (name || 'script').replace(/\\.js$/i, '') + '.cross.js')
+    }
+  }
+}
+
+function download(content, filename) {
+  const blob = new Blob([content], { type: 'text/javascript' })
+  const a = document.createElement('a')
+  a.href = URL.createObjectURL(blob)
+  a.download = filename
+  a.click()
 }
 
 function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') }
@@ -530,6 +571,10 @@ function setLoading(btn, on) { btn.classList.toggle('loading', on); btn.disabled
  *
  * Warn only (surge2loon):
  *   5. $surge usage → warn + line number
+ *
+ * Cross-platform compatible version (both directions):
+ *   - Injects a platform adapter header at top of file
+ *   - Replaces all platform-specific usages with adapter calls
  */
 function checkAndFixJs(jsContent, direction) {
   const issues = []
@@ -595,8 +640,83 @@ function checkAndFixJs(jsContent, direction) {
   return {
     issues,
     fixedJs: hasAutoFix ? fixed : null,
+    crossJs: makeCrossPlatform(jsContent),
     fetchError: false
   }
+}
+
+/**
+ * Generate a cross-platform compatible version of the JS file.
+ *
+ * Injects a platform adapter at the top, then rewrites:
+ *   - status HTTP string        → __STATUS(200)    resolves per platform
+ *   - console.log(...)          → __LOG(...)        resolves per platform
+ *   - $response.status == "200" → __STATUS_EQ($response.status, 200)
+ *   - $loon                     → __LOON           (undefined-safe accessor)
+ *   - $surge                    → __SURGE          (undefined-safe accessor)
+ *
+ * The adapter header defines all __XXX helpers using $environment detection.
+ */
+function makeCrossPlatform(jsContent) {
+  const ADAPTER = `// ── PlugBridge Cross-Platform Adapter ──────────────────────
+// Auto-generated: supports Loon & Surge in a single script
+const __IS_SURGE = typeof $environment !== 'undefined' && !!$environment.surge;
+const __IS_LOON  = typeof $environment !== 'undefined' && !!$environment.loon;
+
+// status: Surge requires number, Loon accepts both
+const __STATUS = (code) => __IS_SURGE ? Number(code) : \`HTTP/1.1 \${code} OK\`;
+
+// Logging: Surge uses $log, Loon uses console.log
+const __LOG = (...args) => {
+  if (__IS_SURGE) { $log(...args); } else { console.log(...args); }
+};
+
+// $response.status: Surge returns number, Loon returns string
+// Usage: __STATUS_EQ($response.status, 200)
+const __STATUS_EQ = (status, code) => Number(status) === Number(code);
+
+// Platform-specific objects (safely undefined on other platforms)
+const __LOON  = typeof $loon  !== 'undefined' ? $loon  : undefined;
+const __SURGE = typeof $surge !== 'undefined' ? $surge : undefined;
+// ────────────────────────────────────────────────────────────
+
+`
+
+  let out = jsContent
+
+  // 1. status HTTP string → __STATUS(NNN)
+  out = out.replace(/["']HTTP\/1\.\d\s+(\d{3})[^"']*["']/g, (_, code) => `__STATUS(${code})`)
+
+  // 2. console.log → __LOG
+  out = out.replace(/console\.log\s*\(/g, '__LOG(')
+
+  // 3. $log( → __LOG(  (in case script already uses $log for Surge)
+  out = out.replace(/\$log\s*\(/g, '__LOG(')
+
+  // 4. $response.status compared to string → __STATUS_EQ(...)
+  //    e.g. $response.status === "200"  →  __STATUS_EQ($response.status, 200)
+  //    e.g. $response.status !== "404"  →  !__STATUS_EQ($response.status, 404)
+  out = out.replace(
+    /\$response\.status\s*([=!]=+)\s*["'](\d+)["']/g,
+    (_, op, code) => op.startsWith('!')
+      ? `!__STATUS_EQ($response.status, ${code})`
+      : `__STATUS_EQ($response.status, ${code})`
+  )
+  // Also handle reversed: "200" === $response.status
+  out = out.replace(
+    /["'](\d+)["']\s*([=!]=+)\s*\$response\.status/g,
+    (_, code, op) => op.startsWith('!')
+      ? `!__STATUS_EQ($response.status, ${code})`
+      : `__STATUS_EQ($response.status, ${code})`
+  )
+
+  // 5. $loon → __LOON
+  out = out.replace(/\$loon\b/g, '__LOON')
+
+  // 6. $surge → __SURGE
+  out = out.replace(/\$surge\b/g, '__SURGE')
+
+  return ADAPTER + out
 }
 
 // ============================================================
