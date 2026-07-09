@@ -1,0 +1,16 @@
+{
+  "name": "ruleset-worker",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Cloudflare Worker: unified rule manager for Loon / Surge / Quantumult X",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "types": "wrangler types"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.0.0",
+    "typescript": "^5.5.0",
+    "wrangler": "^4.0.0"
+  }
+}
