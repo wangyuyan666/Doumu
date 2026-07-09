@@ -73,14 +73,26 @@ export default {
       });
     }
 
-    // 订阅输出：需 ?token=<TOKEN>
+    // 订阅输出：需 ?token=<TOKEN>&policy=<策略名>，按策略分组输出
     const client = CLIENT_PATHS[pathname];
     if (client && method === "GET") {
       if (!tokenValid(url, env)) {
         return text("# 403 无效的 token，订阅地址需携带 ?token=<密钥>\n", 403);
       }
+      const policy = url.searchParams.get("policy")?.trim();
+      if (!policy) {
+        return text("# 400 订阅地址必须携带 &policy=<策略名>\n", 400);
+      }
       const rules = await loadRules(env);
-      return text(renderRuleset(rules, client));
+      const matched = rules.filter((r) => r.policy === policy);
+      if (matched.length === 0) {
+        const available = [...new Set(rules.map((r) => r.policy))].sort();
+        return text(
+          `# 404 策略不存在：${policy}${available.length ? `，可用：${available.join(" / ")}` : "（当前没有任何规则）"}\n`,
+          404,
+        );
+      }
+      return text(renderRuleset(matched, client, policy));
     }
 
     // 规则类型元数据（管理页下拉用）
@@ -95,12 +107,27 @@ export default {
       return json(types);
     }
 
-    // 列表（公开读，支持 ?type= 与 ?q= 过滤）
+    // 策略列表（管理页分组与订阅地址用）
+    if (method === "GET" && pathname === "/api/policies") {
+      const rules = await loadRules(env);
+      const stats = new Map<string, { policy: string; total: number; enabled: number }>();
+      for (const r of rules) {
+        const entry = stats.get(r.policy) ?? { policy: r.policy, total: 0, enabled: 0 };
+        entry.total++;
+        if (r.enabled) entry.enabled++;
+        stats.set(r.policy, entry);
+      }
+      return json([...stats.values()].sort((a, b) => a.policy.localeCompare(b.policy)));
+    }
+
+    // 列表（公开读，支持 ?type= / ?policy= / ?q= 过滤）
     if (method === "GET" && pathname === "/api/rules") {
       let rules = await loadRules(env);
       const type = url.searchParams.get("type");
+      const policy = url.searchParams.get("policy");
       const q = url.searchParams.get("q")?.toLowerCase();
       if (type) rules = rules.filter((r) => r.type === type.toUpperCase());
+      if (policy) rules = rules.filter((r) => r.policy === policy);
       if (q) {
         rules = rules.filter(
           (r) => r.value.toLowerCase().includes(q) || (r.remark ?? "").toLowerCase().includes(q),

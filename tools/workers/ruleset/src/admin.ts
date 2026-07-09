@@ -24,6 +24,11 @@ export const ADMIN_HTML = `<!doctype html>
   .sub { font-size: 12px; opacity: .7; }
   code { background: #8882; padding: 1px 5px; border-radius: 4px; }
   .sub-row { display: flex; align-items: center; gap: 8px; padding: 5px 10px; }
+  .policy-group { padding: 4px 0 8px; }
+  .policy-group + .policy-group { border-top: 1px solid var(--border); }
+  .policy-name { font-weight: 600; padding: 6px 10px 2px; }
+  .policy-name .badge { font-weight: 400; }
+  tr.group td { font-weight: 600; background: #8881; }
   .client { flex: 0 0 52px; font-weight: 600; font-size: 13px; }
   .url { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12px; }
   .sub-row .sub { flex: 0 0 auto; }
@@ -37,25 +42,8 @@ export const ADMIN_HTML = `<!doctype html>
 <h1>规则集管理</h1>
 
 <fieldset>
-  <legend>订阅地址</legend>
-  <div class="sub-row">
-    <span class="client">Loon</span>
-    <code class="url" id="url-loon"></code>
-    <button onclick="copyUrl('loon')">复制</button>
-    <span class="sub">远程规则</span>
-  </div>
-  <div class="sub-row">
-    <span class="client">Surge</span>
-    <code class="url" id="url-surge"></code>
-    <button onclick="copyUrl('surge')">复制</button>
-    <span class="sub">RULE-SET</span>
-  </div>
-  <div class="sub-row">
-    <span class="client">QX</span>
-    <code class="url" id="url-qx"></code>
-    <button onclick="copyUrl('qx')">复制</button>
-    <span class="sub">filter_remote</span>
-  </div>
+  <legend>订阅地址（按策略分组）</legend>
+  <div id="subs"><div class="sub" style="padding:10px">加载中…</div></div>
 </fieldset>
 
 <fieldset>
@@ -63,7 +51,8 @@ export const ADMIN_HTML = `<!doctype html>
   <div class="row">
     <select id="f-type"></select>
     <input id="f-value" placeholder="值，如 example.com" size="28">
-    <input id="f-policy" placeholder="策略（QX 用），如 proxy" size="14" value="proxy">
+    <input id="f-policy" placeholder="策略，如 proxy / direct" size="14" value="proxy" list="policy-list">
+    <datalist id="policy-list"></datalist>
     <label><input id="f-noresolve" type="checkbox"> no-resolve</label>
     <input id="f-remark" placeholder="备注（可选）" size="18">
     <button class="primary" onclick="submitRule()" id="f-submit">添加</button>
@@ -73,13 +62,14 @@ export const ADMIN_HTML = `<!doctype html>
 </fieldset>
 
 <div class="row" style="padding:0 0 8px">
+  <select id="filter-policy"><option value="">全部策略</option></select>
   <select id="filter-type"><option value="">全部类型</option></select>
   <input id="filter-q" placeholder="搜索值/备注" oninput="render()">
   <span id="msg"></span>
 </div>
 
 <table>
-  <thead><tr><th>类型</th><th>值</th><th>策略</th><th>支持</th><th>备注</th><th>操作</th></tr></thead>
+  <thead><tr><th>类型</th><th>值</th><th>支持</th><th>备注</th><th>操作</th></tr></thead>
   <tbody id="tbody"></tbody>
 </table>
 
@@ -90,20 +80,52 @@ const base = location.origin;
 
 // token 直接取自当前页面 URL（进入管理页时已通过 ?token= 鉴权）
 const TOKEN = new URLSearchParams(location.search).get("token") || "";
-const subUrl = (c) => base + "/" + c + "?token=" + TOKEN;
-["loon","surge","qx"].forEach(c => {
-  $("url-" + c).textContent = subUrl(c);
-  $("url-" + c).title = subUrl(c);
-});
+const CLIENTS = [
+  { path: "loon", label: "Loon", sub: "远程规则" },
+  { path: "surge", label: "Surge", sub: "RULE-SET" },
+  { path: "qx", label: "QX", sub: "filter_remote" },
+];
+const subUrl = (c, policy) =>
+  base + "/" + c + "?token=" + encodeURIComponent(TOKEN) + "&policy=" + encodeURIComponent(policy);
 
-async function copyUrl(c) {
+function policiesOf(rules) {
+  return [...new Set(rules.map(r => r.policy))].sort();
+}
+
+function renderSubs() {
+  const policies = policiesOf(RULES);
+  if (!policies.length) {
+    $("subs").innerHTML = "<div class='sub' style='padding:10px'>暂无规则，添加规则后按策略生成订阅地址</div>";
+    return;
+  }
+  $("subs").innerHTML = policies.map(p => {
+    const count = RULES.filter(r => r.policy === p).length;
+    return "<div class='policy-group'>"
+      + "<div class='policy-name'>" + esc(p) + " <span class='badge'>" + count + " 条</span></div>"
+      + CLIENTS.map(c => {
+          const u = subUrl(c.path, p);
+          return "<div class='sub-row'>"
+            + "<span class='client'>" + c.label + "</span>"
+            + "<code class='url' title='" + esc(u) + "'>" + esc(u) + "</code>"
+            + "<button data-client='" + c.path + "' data-policy='" + esc(p) + "'>复制</button>"
+            + "<span class='sub'>" + c.sub + "</span>"
+            + "</div>";
+        }).join("")
+      + "</div>";
+  }).join("");
+}
+
+// 复制按钮事件委托，避免 onclick 内嵌策略名引发的引号转义问题
+$("subs").addEventListener("click", async (e) => {
+  const btn = e.target.closest("button[data-client]");
+  if (!btn) return;
   try {
-    await navigator.clipboard.writeText(subUrl(c));
-    msg("已复制 " + c.toUpperCase() + " 订阅地址", false);
+    await navigator.clipboard.writeText(subUrl(btn.dataset.client, btn.dataset.policy));
+    msg("已复制 " + btn.dataset.client.toUpperCase() + " / " + btn.dataset.policy + " 订阅地址", false);
   } catch {
     msg("复制失败，请手动选择", true);
   }
-}
+});
 function msg(textContent, isErr) {
   const el = $("msg");
   el.textContent = textContent;
@@ -125,6 +147,7 @@ async function init() {
   }
   $("f-type").onchange = updateSupport;
   $("filter-type").onchange = render;
+  $("filter-policy").onchange = render;
   updateSupport();
   await reload();
 }
@@ -145,32 +168,57 @@ function updateSupport() {
 
 async function reload() {
   RULES = await fetch("/api/rules").then(r => r.json());
+  refreshPolicyOptions();
+  renderSubs();
   render();
+}
+
+function refreshPolicyOptions() {
+  const policies = policiesOf(RULES);
+  const sel = $("filter-policy");
+  const kept = sel.value;
+  sel.length = 1; // 保留“全部策略”
+  $("policy-list").innerHTML = "";
+  for (const p of policies) {
+    const opt = document.createElement("option");
+    opt.value = p; opt.textContent = p;
+    sel.appendChild(opt);
+    $("policy-list").appendChild(opt.cloneNode(true));
+  }
+  if (policies.includes(kept)) sel.value = kept;
 }
 
 function esc(s) {
   return String(s ?? "").replace(/[&<>"']/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
 }
 
+function ruleRow(r) {
+  const t = TYPES.find(x => x.name === r.type) || {};
+  return "<tr class='" + (r.enabled ? "" : "disabled") + "'>"
+    + "<td>" + esc(r.type) + "</td>"
+    + "<td>" + esc(r.value) + (r.noResolve ? " <span class='badge'>no-resolve</span>" : "") + "</td>"
+    + "<td>" + supportBadges(t) + "</td>"
+    + "<td>" + esc(r.remark || "") + "</td>"
+    + "<td>"
+    + "<button onclick=\\"startEdit('" + r.id + "')\\">编辑</button> "
+    + "<button onclick=\\"toggleRule('" + r.id + "')\\">" + (r.enabled ? "停用" : "启用") + "</button> "
+    + "<button class='danger' onclick=\\"removeRule('" + r.id + "')\\">删除</button>"
+    + "</td></tr>";
+}
+
 function render() {
-  const ft = $("filter-type").value, q = $("filter-q").value.toLowerCase();
+  const fp = $("filter-policy").value, ft = $("filter-type").value, q = $("filter-q").value.toLowerCase();
   const rows = RULES.filter(r =>
+    (!fp || r.policy === fp) &&
     (!ft || r.type === ft) &&
     (!q || r.value.toLowerCase().includes(q) || (r.remark || "").toLowerCase().includes(q)));
-  $("tbody").innerHTML = rows.map(r => {
-    const t = TYPES.find(x => x.name === r.type) || {};
-    return "<tr class='" + (r.enabled ? "" : "disabled") + "'>"
-      + "<td>" + esc(r.type) + "</td>"
-      + "<td>" + esc(r.value) + (r.noResolve ? " <span class='badge'>no-resolve</span>" : "") + "</td>"
-      + "<td>" + esc(r.policy) + "</td>"
-      + "<td>" + supportBadges(t) + "</td>"
-      + "<td>" + esc(r.remark || "") + "</td>"
-      + "<td>"
-      + "<button onclick=\\"startEdit('" + r.id + "')\\">编辑</button> "
-      + "<button onclick=\\"toggleRule('" + r.id + "')\\">" + (r.enabled ? "停用" : "启用") + "</button> "
-      + "<button class='danger' onclick=\\"removeRule('" + r.id + "')\\">删除</button>"
-      + "</td></tr>";
-  }).join("") || "<tr><td colspan='6' class='sub'>暂无规则</td></tr>";
+  // 按策略分组渲染，组头行显示策略名与条数
+  const html = policiesOf(rows).map(p => {
+    const group = rows.filter(r => r.policy === p);
+    return "<tr class='group'><td colspan='5'>" + esc(p) + "（" + group.length + " 条）</td></tr>"
+      + group.map(ruleRow).join("");
+  }).join("");
+  $("tbody").innerHTML = html || "<tr><td colspan='5' class='sub'>暂无规则</td></tr>";
 }
 
 function startEdit(id) {

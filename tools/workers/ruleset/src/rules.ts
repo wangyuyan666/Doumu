@@ -138,7 +138,8 @@ const CLIENT_LABEL: Record<ClientName, string> = {
   qx: "Quantumult X (filter_remote)",
 };
 
-export function renderRuleset(rules: Rule[], client: ClientName): string {
+/** rules 需已按 policy 过滤；policy 仅用于输出头部标注 */
+export function renderRuleset(rules: Rule[], client: ClientName, policy: string): string {
   const active = rules.filter((r) => r.enabled);
   const lines: string[] = [];
   let ruleCount = 0;
@@ -153,6 +154,7 @@ export function renderRuleset(rules: Rule[], client: ClientName): string {
   }
   const header = [
     `# ${CLIENT_LABEL[client]}`,
+    `# 策略：${policy}`,
     `# 规则数：${ruleCount}${skipped ? `（${skipped} 条类型不受此客户端支持，已跳过）` : ""}`,
     `# 更新时间：${new Date().toISOString()}`,
     "",
