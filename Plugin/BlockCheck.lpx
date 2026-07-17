@@ -1,0 +1,8 @@
+#!name=节点阻断检测
+#!desc=检测当前节点是否可连接，并判断是否被运营商/GFW 阻断（移植自 RavelloH 的 Quantumult X 脚本）
+#!tag=工具
+#!icon=https://raw.githubusercontent.com/wangyuyan666/Doumu/main/Icon/Color/Speedtest.png
+#!openUrl=https://github.com/wangyuyan666/Doumu
+
+[Script]
+generic script-path=https://raw.githubusercontent.com/wangyuyan666/Doumu/main/Js/BlockCheck.js, tag=节点阻断检测, img-url=bolt.horizontal.icloud.fill.system, timeout=30
